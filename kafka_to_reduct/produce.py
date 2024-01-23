@@ -8,11 +8,12 @@ kafka_conf = {
     "bootstrap.servers": "localhost:9092",
 }
 
-admin_client = AdminClient(kafka_conf)
+kafka_producer = Producer(kafka_conf)
+kafka_admin_client = AdminClient(kafka_conf)
 
 
 def create_kafka_topic(topic_name, num_partitions, replication_factor):
-    current_topics = admin_client.list_topics(timeout=10).topics
+    current_topics = kafka_admin_client.list_topics(timeout=10).topics
     if topic_name in current_topics:
         print(f"Topic '{topic_name}' already exists.")
         return
@@ -23,7 +24,7 @@ def create_kafka_topic(topic_name, num_partitions, replication_factor):
         replication_factor=replication_factor,
     )
     try:
-        fs = admin_client.create_topics([topic])
+        fs = kafka_admin_client.create_topics([topic])
         for topic, f in fs.items():
             f.result()
     except KafkaError as e:
@@ -42,15 +43,16 @@ def callback(err, msg):
 
 
 async def produce_binary_data(topic_name, num_messages=10):
-    producer = Producer(kafka_conf)
     for _ in range(num_messages):
         data = generate_random_data(size_in_kb=random.randint(1, 900))
         metadata = {"size": str(len(data)), "type": "binary"}
         headers = [(key, value.encode("utf-8")) for key, value in metadata.items()]
-        producer.produce(topic_name, value=data, headers=headers, callback=callback)
-        producer.poll(0)
+        kafka_producer.produce(
+            topic_name, value=data, headers=headers, callback=callback
+        )
+        kafka_producer.poll(0)
         await asyncio.sleep(1)
-    producer.flush()
+    kafka_producer.flush()
 
 
 async def main():
