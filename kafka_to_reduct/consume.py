@@ -19,8 +19,9 @@ async def consume_and_store(topic_name, bucket_name):
 
         consumer.subscribe([topic_name])
         while True:
-            msg = consumer.poll(1.0)
+            msg = consumer.poll(0)
             if msg is None:
+                await asyncio.sleep(1)
                 continue
             if msg.error():
                 if msg.error().code() == KafkaException._PARTITION_EOF:
