@@ -19,6 +19,7 @@ async def consume_and_store(topic_name, bucket_name):
 
         consumer.subscribe([topic_name])
         while True:
+            # Polling for messages from Kafka with async support
             msg = consumer.poll(0)
             if msg is None:
                 await asyncio.sleep(1)
