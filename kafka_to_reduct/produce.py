@@ -8,12 +8,10 @@ kafka_conf = {
     "bootstrap.servers": "localhost:9092",
 }
 
+admin_client = AdminClient(kafka_conf)
 
-def create_kafka_topic(
-    topic_name, num_partitions, replication_factor, kafka_broker="localhost:9092"
-):
-    admin_client = AdminClient({"bootstrap.servers": kafka_broker})
 
+def create_kafka_topic(topic_name, num_partitions, replication_factor):
     current_topics = admin_client.list_topics(timeout=10).topics
     if topic_name in current_topics:
         print(f"Topic '{topic_name}' already exists.")

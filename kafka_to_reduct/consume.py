@@ -2,15 +2,14 @@ import asyncio
 from confluent_kafka import Consumer, KafkaException
 from reduct import Client, Bucket
 
-client = Client("http://127.0.0.1:8383")
-
-conf = {
+kafka_conf = {
     "bootstrap.servers": "localhost:9092",
     "group.id": "datasink_demo",
     "auto.offset.reset": "earliest",
 }
 
-consumer = Consumer(conf)
+client = Client("http://127.0.0.1:8383")
+consumer = Consumer(kafka_conf)
 
 
 async def consume_and_store(topic_name, bucket_name):
