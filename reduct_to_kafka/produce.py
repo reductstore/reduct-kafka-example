@@ -1,6 +1,6 @@
 import asyncio
 from time import time_ns
-from confluent_kafka import Producer
+from confluent_kafka import Producer, KafkaError
 from confluent_kafka.admin import AdminClient, NewTopic
 from reduct import Client, Bucket
 
@@ -14,16 +14,31 @@ kafka_conf = {
 def create_kafka_topic(
     topic_name, num_partitions, replication_factor, kafka_broker="localhost:9092"
 ):
+    # Create an AdminClient object with the broker information
     admin_client = AdminClient({"bootstrap.servers": kafka_broker})
 
-    topic_list = [
-        NewTopic(
-            topic_name,
-            num_partitions=num_partitions,
-            replication_factor=replication_factor,
-        )
-    ]
-    admin_client.create_topics(topic_list)
+    # Check if the topic already exists
+    current_topics = admin_client.list_topics(timeout=10).topics
+    if topic_name in current_topics:
+        print(f"Topic '{topic_name}' already exists.")
+        return
+
+    # Define the new topic along with its partitions and replication factors
+    topic = NewTopic(
+        topic_name,
+        num_partitions=num_partitions,
+        replication_factor=replication_factor,
+    )
+    try:
+        # Request the creation of the new topics on the server
+        fs = admin_client.create_topics([topic])
+
+        # Wait for each operation to finish.
+        for topic, f in fs.items():
+            f.result()
+
+    except KafkaError as e:
+        print(f"Failed to create Kafka topic: {e}")
 
 
 async def writer():

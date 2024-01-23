@@ -1,105 +1,147 @@
-# Kafka-ReductStore Simple Application
+# Kafka-ReductStore Simple Demonstrations
 
 ## Overview
 
-This application demonstrates a simple setup for using Apache Kafka with ReductStore. The setup includes a Kafka producer (`produce.py`) that writes data with a toggling `good` flag to ReductStore and then publishes metadata to a Kafka topic. A Kafka consumer (`consume.py`) is used to read messages from this topic. The services are containerized using Docker and managed with Docker Compose.
+This collection features two simple demos that illustrate the integration of Apache Kafka with ReductStore in distinct ways. 
+
+A simple Kafka Topic Management CLI tool (`kafka_cli.py`) is also included to facilitate the creation, listing, and deletion of Kafka topics.
+
+### 1. Kafka to ReductStore Demo (kafka_to_reduct)
+
+This demo shows how data can be streamed from Kafka to ReductStore. It includes a Kafka producer that writes binary data to a Kafka topic, and a Kafka consumer that reads from this topic and writes to ReductStore.
+
+### 2. ReductStore to Kafka Demo (reduct_to_kafka)
+
+In this setup, a Kafka producer writes data with a toggling `good` flag to ReductStore and then publishes metadata to a Kafka topic. A Kafka consumer script reads messages from this topic and prints the result.
+
+### 3. Kafka CLI Tool (kafka_cli.py)
+
+This simple command-line interface tool provides functionalities for creating, deleting, and printing details of topics.
 
 ## Prerequisites
 
 - Docker and Docker Compose installed on your machine.
-
-- Python environment (preferably with virtualenv or similar tool).
+- Python environment (preferably with virtualenv).
 
 ## Setup and Configuration
 
-### 1. Docker Compose
+### Docker Compose
 
-The `docker-compose.yml` file contains the configuration for Zookeeper, Kafka, and ReductStore services.
+Common `docker-compose.yml` configuration for Zookeeper, Kafka, and ReductStore. 
 
-To start these services, navigate to the directory containing `docker-compose.yml` and run:
+Start the services in detache mode with:
 
 ```bash
-
-docker compose up
-
+docker compose up -d
 ```
 
-This command will download the necessary Docker images and start the services.
-
-### 2. Python Environment
-
-It's recommended to use a Python virtual environment. To set up and activate a virtual environment:
+Logs can be viewed with:
 
 ```bash
+docker compose logs -f
+```
 
+### Python Environment
+
+Set up and activate a Python virtual environment:
+
+```bash
 python -m venv .venv
-
 source .venv/bin/activate
-
 ```
 
-### 3. Install Dependencies
+### Install Dependencies
 
-Install the required Python packages using:
+Install required Python packages:
 
 ```bash
-
 pip install -r requirements.txt
-
 ```
 
-The `requirements.txt` file should contain:
+Dependencies include `confluent-kafka` and `reduct`.
 
-```
+### Running the Demos
 
-confluent-kafka
+#### Kafka to ReductStore (`kafka_to_reduct` folder):
 
-reduct
-
-```
-
-### 4. Running the Producer and Consumer Scripts
-
-#### Producer (`produce.py`):
-
-The producer script creates a Kafka topic, writes data to ReductStore, and publishes metadata to the Kafka topic. To run the script:
+- Producer (`produce.py`): Writes binary data to Kafka topic `entry-1`.
 
 ```bash
-
-python produce.py
-
+python kafka_to_reduct/produce.py
 ```
 
-This script will:
-
-- Create a Kafka topic named `metadata_topic`.
-
-- Write data to ReductStore and publish metadata to the Kafka topic.
-
-#### Consumer (`consume.py`):
-
-The consumer script reads messages from the Kafka topic `metadata_topic`. To run the script:
+- Consumer (`consume.py`): Reads from Kafka topic `entry-1` and writes to ReductStore.
 
 ```bash
-
-python consume.py
-
+python kafka_to_reduct/consume.py
 ```
 
-This script will continuously read messages from the `metadata_topic` and print them to the console.
+- Read (`read.py`): Reads from ReductStore bucket.
+
+```bash
+python kafka_to_reduct/read.py
+```
+
+#### ReductStore to Kafka (`reduct_to_kafka` folder):
+
+- Producer (`produce.py`): Writes data to ReductStore and publishes metadata to Kafka.
+
+```bash
+python reduct_to_kafka/produce.py
+```
+
+- Consumer (`consume.py`): Reads and print from Kafka topic `metadata_topic`.
+
+```bash
+python reduct_to_kafka/consume.py
+```
+
+### Kafka CLI Tool Usage
+
+- Print Topic Details:
+
+    ```bash
+    python kafka_cli.py print <topic_name>
+    ```
+
+    Replace `<topic_name>` with the name of the Kafka topic you want details for.
+
+- Delete a Topic:
+
+    ```bash
+    python kafka_cli.py delete <topic_name>
+    ```
+
+    Replace `<topic_name>` with the name of the Kafka topic you wish to delete.
+
+- Create a Topic:
+
+    ```bash
+    python kafka_cli.py create <topic_name> <num_partitions> <replication_factor>
+    ```
+
+    Replace `<topic_name>`, `<num_partitions>`, and `<replication_factor>` with your desired values.
 
 ## Troubleshooting
 
-- Ensure Docker services are up and running.
+- Ensure Docker services are running
 
-- Check if Kafka and Zookeeper ports (`9092` and `2181` respectively) are correctly mapped and accessible.
+  - Tips: use `docker compose ps`
 
-- Make sure ReductStore is running and accessible on port `8383`.
+- Check Kafka and Zookeeper ports (`9092`, `2181`)
 
-- Validate that the Kafka topic is correctly created.
+  - Tips: use `netstat`
 
-- Confirm network accessibility if running scripts outside Docker where Kafka is hosted.
+- Ensure ReductStore is running on port `8383` 
+
+  - Tips: open `http://localhost:8383` in your browser.
+
+- Verify Kafka topic creation 
+
+  - Tips: use CLI `python kafka_cli.py print <topic_name>`.
 
 ## Conclusion
 
 This application provides a basic framework for integrating Kafka with ReductStore. It can be extended or modified for more complex data processing and streaming requirements.
+
+If you have any questions or feedback, please contact us on [Discord](https://discord.com/invite/BWrCncF5EP).
