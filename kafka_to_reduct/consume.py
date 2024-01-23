@@ -42,9 +42,6 @@ async def consume_and_store(topic_name, bucket_name):
             print(
                 f"Stored binary data of size {len(data)} bytes with headers: {headers}"
             )
-
-            # sleep for 1 second
-            await asyncio.sleep(1)
     finally:
         consumer.close()
 
